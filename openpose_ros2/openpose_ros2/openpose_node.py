@@ -38,7 +38,6 @@ class OpenPosePreviewNode(Node):
 
             # Convert to KeyPointsList
             pose_key_points_list_obj = PoseKeyPointsList()
-            pose_key_points_list_obj.header.stamp = image_raw.header.stamp
             if isinstance(result.poseKeypoints, np.ndarray):
                 pose_key_points_list = []
                 for result_pose_key_points in result.poseKeypoints:
@@ -48,6 +47,7 @@ class OpenPosePreviewNode(Node):
                         pose_key_points.append(PoseKeyPoint(x=x.item(), y=y.item(), score=score.item()))
                     pose_key_points_list.append(PoseKeyPoints(pose_key_points=pose_key_points))
                 pose_key_points_list_obj = PoseKeyPointsList(pose_key_points_list=pose_key_points_list)
+            pose_key_points_list_obj.header.stamp = image_raw.header.stamp
             self._pose_publisher.publish(pose_key_points_list_obj)
 
         except Exception as err:
