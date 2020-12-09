@@ -22,7 +22,8 @@ class OpenPosePreviewNode(Node):
         self._publisher = self.create_publisher(CompressedImage, '/openpose/preview', 10)
         self._pose_publisher = self.create_publisher(PoseKeyPointsList, '/openpose/pose_key_points', 10)
 
-        self.subscription = self.create_subscription(CompressedImage, '/camera/color/image_raw/compressed', self.get_color_callback, 10)
+        self.subscription = self.create_subscription(CompressedImage, '/camera/color/image_raw/compressed',
+                                                     self.get_color_callback, 10)
 
     def get_color_callback(self, image_raw: CompressedImage) -> None:
         try:
@@ -37,6 +38,7 @@ class OpenPosePreviewNode(Node):
 
             # Convert to KeyPointsList
             pose_key_points_list_obj = PoseKeyPointsList()
+            pose_key_points_list_obj.header.stamp = image_raw.header.stamp
             if isinstance(result.poseKeypoints, np.ndarray):
                 pose_key_points_list = []
                 for result_pose_key_points in result.poseKeypoints:
