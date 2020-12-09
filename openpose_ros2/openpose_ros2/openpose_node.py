@@ -1,8 +1,9 @@
 import numpy as np
+import datetime
 import rclpy
 from cv_bridge import CvBridge
 from rclpy.node import Node
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 
 from shigure.nodes.openpose.wrapper import OpenPoseWrapper
 
@@ -18,18 +19,20 @@ class OpenPosePreviewNode(Node):
 
         self.openpose_wrapper = OpenPoseWrapper('/openpose')
 
-        self._publisher = self.create_publisher(Image, '/openpose/preview', 10)
+        self._publisher = self.create_publisher(CompressedImage, '/openpose/preview', 10)
         self._pose_publisher = self.create_publisher(PoseKeyPointsList, '/openpose/pose_key_points', 10)
 
-        self.subscription = self.create_subscription(Image, '/camera/color/image_raw', self.get_color_callback, 10)
+        self.subscription = self.create_subscription(CompressedImage, '/camera/color/image_raw/compressed', self.get_color_callback, 10)
 
-    def get_color_callback(self, image_raw: Image) -> None:
+    def get_color_callback(self, image_raw: CompressedImage) -> None:
         try:
+            print('[' + str(datetime.datetime.now()) + '] Image received', end='\r')
             bridge = CvBridge()
-            image: np.ndarray = bridge.imgmsg_to_cv2(image_raw)
+            image: np.ndarray = bridge.compressed_imgmsg_to_cv2(image_raw)
 
             result = self.openpose_wrapper.body_from_image(image)
-            result_image = bridge.cv2_to_imgmsg(result.cvOutputData, 'rgb8')
+            result_image: CompressedImage = bridge.cv2_to_compressed_imgmsg(result.cvOutputData)
+            result_image.header.stamp = image_raw.header.stamp
             self._publisher.publish(result_image)
 
             # Convert to KeyPointsList
@@ -62,6 +65,7 @@ def main(args=None):
 
     finally:
         # 終了処理
+        print()
         openpose_preview_node.destroy_node()
         rclpy.shutdown()
 
