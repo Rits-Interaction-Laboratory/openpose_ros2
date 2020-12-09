@@ -21,6 +21,8 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(std_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -38,6 +40,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PoseKeyPoint.msg"
   "msg/PoseKeyPoints.msg"
   "msg/PoseKeyPointsList.msg"
+  DEPENDENCIES builtin_interfaces std_msgs
 )
 
 ament_package()
