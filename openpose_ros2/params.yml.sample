@@ -1,0 +1,6 @@
+openpose_node:
+  ros__parameters:
+    is_debug_mode: false
+    openpose_root: ""
+    is_image_compressed: false
+    image_node: ""
