@@ -18,8 +18,7 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Interaction Lab.',
-    # TODO: OSS化のときに検討
-    maintainer_email='yoshida@todo.todo',
+    maintainer_email='is0436er@ed.ritsumei.ac.jp',
     description='A ROS2 package that call the OpenPose from ROS2.',
     license='MIT License',
     tests_require=['pytest'],
