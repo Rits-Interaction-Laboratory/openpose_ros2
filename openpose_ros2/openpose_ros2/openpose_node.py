@@ -7,7 +7,7 @@ from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from sensor_msgs.msg import Image, CompressedImage
 
-from shigure.nodes.openpose.wrapper import OpenPoseWrapper
+from openpose_ros2.wrapper import OpenPoseWrapper
 
 from openpose_ros2_msgs.msg import PoseKeyPointsList, PoseKeyPoint, PoseKeyPoints
 
