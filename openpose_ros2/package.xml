@@ -5,7 +5,7 @@
   <version>1.0.0</version>
   <description>A ROS2 package that call the OpenPose from ROS2.</description>
   <!-- OSS化のときに再検討 -->
-  <maintainer email="yoshida@todo.todo">Interaction Lab.</maintainer>
+  <maintainer email="is0436er@ed.ritsumei.ac.jp">Interaction Lab.</maintainer>
   <license>MIT License</license>
 
   <exec_depend>rclpy</exec_depend>
