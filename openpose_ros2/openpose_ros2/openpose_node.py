@@ -6,6 +6,7 @@ from cv_bridge import CvBridge
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from sensor_msgs.msg import Image, CompressedImage
+from std_msgs.msg import Header
 
 from openpose_ros2.wrapper import OpenPoseWrapper
 
@@ -57,13 +58,15 @@ class OpenPosePreviewNode(Node):
             self.subscription = self.create_subscription(Image, image_node,
                                                          self.get_img_callback, 10)
 
-    def publish_from_img(self, img: np.ndarray, timestamp: Time):
+    def publish_from_img(self, img: np.ndarray, timestamp: Time, frame_id: str =""):
         result = self.openpose_wrapper.body_from_image(img)
         if self.is_debug_mode:
             result_image: Image = self.bridge.cv2_to_imgmsg(result.cvOutputData, "rgb8")
             result_image_compressed: CompressedImage = self.bridge.cv2_to_compressed_imgmsg(result.cvOutputData)
             result_image.header.stamp = timestamp
+            result_image.header.frame_id = frame_id
             result_image_compressed.header.stamp = timestamp
+            result_image_compressed.header.frame_id = frame_id
             self._publisher.publish(result_image)
             self._publisher_compressed.publish(result_image_compressed)
 
@@ -79,13 +82,14 @@ class OpenPosePreviewNode(Node):
                 pose_key_points_list.append(PoseKeyPoints(pose_key_points=pose_key_points))
             pose_key_points_list_obj = PoseKeyPointsList(pose_key_points_list=pose_key_points_list)
         pose_key_points_list_obj.header.stamp = timestamp
+        pose_key_points_list_obj.header.frame_id = frame_id
         self._pose_publisher.publish(pose_key_points_list_obj)
 
     def get_img_callback(self, image_raw: Image) -> None:
         try:
             print('[' + str(datetime.datetime.now()) + '] Image received', end='\r')
             image: np.ndarray = self.bridge.imgmsg_to_cv2(image_raw)
-            self.publish_from_img(image, image_raw.header.stamp)
+            self.publish_from_img(image, image_raw.header.stamp, image_raw.header.frame_id)
         except Exception as err:
             self.get_logger().error(err)
 
@@ -93,7 +97,7 @@ class OpenPosePreviewNode(Node):
         try:
             print('[' + str(datetime.datetime.now()) + '] Compressed image received', end='\r')
             image: np.ndarray = self.bridge.compressed_imgmsg_to_cv2(image_raw)
-            self.publish_from_img(image, image_raw.header.stamp)
+            self.publish_from_img(image, image_raw.header.stamp, image_raw.header.frame_id)
 
         except Exception as err:
             self.get_logger().error(err)
