@@ -4,6 +4,7 @@ import rclpy
 from builtin_interfaces.msg import Time
 from cv_bridge import CvBridge
 from rclpy.node import Node
+import cv2
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from sensor_msgs.msg import Image, CompressedImage
 from std_msgs.msg import Header
@@ -61,7 +62,7 @@ class OpenPosePreviewNode(Node):
     def publish_from_img(self, img: np.ndarray, timestamp: Time, frame_id: str =""):
         result = self.openpose_wrapper.body_from_image(img)
         if self.is_debug_mode:
-            result_image: Image = self.bridge.cv2_to_imgmsg(result.cvOutputData, "rgb8")
+            result_image: Image = self.bridge.cv2_to_imgmsg(cv2.cvtColor(result.cvOutputData,cv2.COLOR_BGR2RGB), "rgb8")
             result_image_compressed: CompressedImage = self.bridge.cv2_to_compressed_imgmsg(result.cvOutputData)
             result_image.header.stamp = timestamp
             result_image.header.frame_id = frame_id
