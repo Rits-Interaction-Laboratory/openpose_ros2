@@ -4,6 +4,7 @@ import rclpy
 from builtin_interfaces.msg import Time
 from cv_bridge import CvBridge
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from sensor_msgs.msg import Image, CompressedImage
 from std_msgs.msg import Header
@@ -18,6 +19,9 @@ class OpenPosePreviewNode(Node):
 
     def __init__(self):
         super().__init__('openpose_node')
+
+        # QoS Settings
+        shigure_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
 
         # ros params
         is_debug_mode_descriptor = ParameterDescriptor(type=ParameterType.PARAMETER_BOOL,
@@ -53,10 +57,10 @@ class OpenPosePreviewNode(Node):
 
         if is_image_compressed:
             self.subscription = self.create_subscription(CompressedImage, image_node,
-                                                         self.get_img_compressed_callback, 10)
+                                                         self.get_img_compressed_callback, shigure_qos)
         else:
             self.subscription = self.create_subscription(Image, image_node,
-                                                         self.get_img_callback, 10)
+                                                         self.get_img_callback, shigure_qos)
 
     def publish_from_img(self, img: np.ndarray, timestamp: Time, frame_id: str =""):
         result = self.openpose_wrapper.body_from_image(img)
