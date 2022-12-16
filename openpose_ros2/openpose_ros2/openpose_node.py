@@ -50,6 +50,9 @@ class OpenPosePreviewNode(Node):
         self.get_logger().info('ImageNode : ' + image_node)
         self.get_logger().info('IsImageCompressed : ' + str(is_image_compressed))
 
+        # debug print settings
+        self.received_flag = True
+
         if self.is_debug_mode:
             self._publisher = self.create_publisher(Image, '/openpose/preview', 10)
             self._publisher_compressed = self.create_publisher(CompressedImage, '/openpose/preview/compressed', 10)
@@ -91,7 +94,10 @@ class OpenPosePreviewNode(Node):
 
     def get_img_callback(self, image_raw: Image) -> None:
         try:
-            print('[' + str(datetime.datetime.now()) + '] Image received', end='\r')
+            if self.received_flag:
+                print('[' + str(datetime.datetime.now()) + '] Image received')
+                self.received_flag = False
+            #print('[' + str(datetime.datetime.now()) + '] Image received', end='\r')
             image: np.ndarray = self.bridge.imgmsg_to_cv2(image_raw)
             self.publish_from_img(image, image_raw.header.stamp, image_raw.header.frame_id)
         except Exception as err:
@@ -99,7 +105,10 @@ class OpenPosePreviewNode(Node):
 
     def get_img_compressed_callback(self, image_raw: CompressedImage) -> None:
         try:
-            print('[' + str(datetime.datetime.now()) + '] Compressed image received', end='\r')
+            if self.received_flag:
+                print('[' + str(datetime.datetime.now()) + '] Compressed image received')
+                self.received_flag = False
+            #print('[' + str(datetime.datetime.now()) + '] Compressed image received', end='\r')
             image: np.ndarray = self.bridge.compressed_imgmsg_to_cv2(image_raw)
             self.publish_from_img(image, image_raw.header.stamp, image_raw.header.frame_id)
 
