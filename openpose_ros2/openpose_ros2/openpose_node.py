@@ -1,6 +1,7 @@
 import numpy as np
 import datetime
 import rclpy
+import cv2
 from builtin_interfaces.msg import Time
 from cv_bridge import CvBridge
 from rclpy.node import Node
@@ -57,6 +58,8 @@ class OpenPosePreviewNode(Node):
             self._publisher = self.create_publisher(Image, '/openpose/preview', 10)
             self._publisher_compressed = self.create_publisher(CompressedImage, '/openpose/preview/compressed', 10)
         self._pose_publisher = self.create_publisher(PoseKeyPointsList, '/openpose/pose_key_points', 10)
+        self._left_hand_publisher = self.create_publisher(PoseKeyPointsList, '/openpose/left_hand_key_points', 10)
+        self._right_hand_publisher = self.create_publisher(PoseKeyPointsList, '/openpose/right_hand_key_points', 10)
 
         if is_image_compressed:
             self.subscription = self.create_subscription(CompressedImage, image_node,
@@ -76,9 +79,13 @@ class OpenPosePreviewNode(Node):
             result_image_compressed.header.frame_id = frame_id
             self._publisher.publish(result_image)
             self._publisher_compressed.publish(result_image_compressed)
+            cv2.namedWindow('result',cv2.WINDOW_NORMAL)
+            cv2.imshow('result',result.cvOutputData)
+            cv2.waitKey(1)
 
         # Convert to KeyPointsList
         pose_key_points_list_obj = PoseKeyPointsList()
+        #print("Body keypoints:" + str(result.handKeypoints)) 
         if isinstance(result.poseKeypoints, np.ndarray):
             pose_key_points_list = []
             for result_pose_key_points in result.poseKeypoints:
@@ -92,6 +99,53 @@ class OpenPosePreviewNode(Node):
         pose_key_points_list_obj.header.frame_id = frame_id
         self._pose_publisher.publish(pose_key_points_list_obj)
 
+        '''
+        hand_key_points_list_obj = handKeyPointsList()
+        for result_hand_key_points_list in result.handKeypoints:
+            if isinstance(result_hand_key_points, np.ndarray):
+                hand_key_points_lists = []
+                hand_key_points_list = []
+                for result_hand_key_points in result_hand_key_points_list:
+                    hand_key_points = []
+                    for result_hand_key_point in result_hand_key_points:
+                        x,y,score = result_hand_key_point
+                        hand_key_points.append(KeyPoint(x=x.item(), y=y.item(), score=score.item()))
+                    hand_key_points_list.append(KeyPoints(key_points=hand_key_points))
+                hand_key_points_lists.append(hand_key_points_list)
+        hand_key_points_list_obj = HandKeyPointsList(left_key_points_list = hand_key_points_lists[0], right_key_points_list = hand_key_points_lists[1])
+        hand_key_points_list_obj.header.stamp = timestamp
+        hand_key_points_list_obj.header.frame_id = frame_id
+        self._pose_publisher.publish(hand_key_points_list_obj)
+        '''     
+        
+        left_hand_key_points_list_obj = PoseKeyPointsList()
+        if isinstance(result.handKeypoints[0], np.ndarray):
+            left_hand_key_points_list = []
+            for result_left_hand_key_points in result.handKeypoints[0]:
+                left_hand_key_points = []
+                for result_left_hand_key_point in result_left_hand_key_points:
+                    x, y, score = result_left_hand_key_point
+                    left_hand_key_points.append(PoseKeyPoint(x=x.item(), y=y.item(), score=score.item()))
+                left_hand_key_points_list.append(PoseKeyPoints(pose_key_points=left_hand_key_points))
+            left_hand_key_points_list_obj = PoseKeyPointsList(pose_key_points_list=left_hand_key_points_list)
+        left_hand_key_points_list_obj.header.stamp = timestamp
+        left_hand_key_points_list_obj.header.frame_id = frame_id
+        self._left_hand_publisher.publish(left_hand_key_points_list_obj)
+
+        right_hand_key_points_list_obj = PoseKeyPointsList()
+        if isinstance(result.handKeypoints[1], np.ndarray):
+            right_hand_key_points_list = []
+            for result_right_hand_key_points in result.handKeypoints[1]:
+                right_hand_key_points = []
+                for result_right_hand_key_point in result_right_hand_key_points:
+                    x, y, score = result_right_hand_key_point
+                    right_hand_key_points.append(PoseKeyPoint(x=x.item(), y=y.item(), score=score.item()))
+                right_hand_key_points_list.append(PoseKeyPoints(pose_key_points=right_hand_key_points))
+            right_hand_key_points_list_obj = PoseKeyPointsList(pose_key_points_list=right_hand_key_points_list)
+        right_hand_key_points_list_obj.header.stamp = timestamp
+        right_hand_key_points_list_obj.header.frame_id = frame_id
+        self._right_hand_publisher.publish(right_hand_key_points_list_obj)
+    
     def get_img_callback(self, image_raw: Image) -> None:
         try:
             if self.received_flag:

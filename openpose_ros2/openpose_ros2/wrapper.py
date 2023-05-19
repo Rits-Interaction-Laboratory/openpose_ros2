@@ -16,6 +16,16 @@ class OpenPoseWrapper:
 
         self.params = dict()
         self.params['model_folder'] = openpose_path + '/models'
+        #self.params['net_resolution'] = "160x80"
+        #self.params['face_net_resolution'] = "256x256"
+        #self.params['hand_net_resolution'] = "128x128"
+        #self.params['model_pose'] = "COCO"
+        #self.params['face'] = True
+        #self.params['face_detector'] = 0
+        self.params['hand'] = True
+        self.params['hand_detector'] = 0
+        self.params['body'] = 1
+        
 
         # Config OpenWrapper
         self.op_wrapper = op.WrapperPython()
